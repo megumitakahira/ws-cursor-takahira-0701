@@ -1,4 +1,5 @@
 import httpx
+import pandas as pd
 import streamlit as st
 
 # APIのエンドポイント
@@ -37,6 +38,7 @@ if submit_button:
             new_item = response.json()
             st.success(f"✅ 商品「{new_item['name']}」を登録しました！")
             # (ここに一覧への追加処理を実装 - Task 3)
+            st.session_state.session_items.insert(0, new_item)
         except httpx.RequestError as e:
             st.error(f"❌ APIサーバーへの接続に失敗しました: {e}")
         except httpx.HTTPStatusError as e:
@@ -50,3 +52,17 @@ st.divider()
 st.header("このセッションで登録した商品")
 st.warning("注意: この一覧はブラウザをリロードすると消えます。")
 # (ここに一覧表示を実装 - Task 3)
+if st.session_state.session_items:
+    df = pd.DataFrame(st.session_state.session_items)
+    st.dataframe(
+        df,
+        column_config={
+            "id": "ID",
+            "name": "商品名",
+            "price": "価格",
+            "created_at": "登録日時",
+        },
+        hide_index=True,
+    )
+else:
+    st.info("このセッションではまだ商品が登録されていません。")
