@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from api.models import Item, ItemCreate
 from api.storage import InMemoryStorage
@@ -22,3 +22,12 @@ async def health_check() -> dict[str, str]:
 async def create_item(item_create: ItemCreate) -> Item:
     """Creates a new item."""
     return storage.create_item(item_create)
+
+
+@app.get("/items/{item_id}", response_model=Item)
+async def get_item(item_id: int) -> Item:
+    """Gets an item by its ID."""
+    item = storage.get_item(item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
