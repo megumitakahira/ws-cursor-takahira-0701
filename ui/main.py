@@ -47,6 +47,22 @@ if submit_button:
 st.divider()
 st.header("商品の検索 (ID指定)")
 # (ここに検索フォームを実装 - Task 4)
+search_id = st.number_input("商品ID", min_value=1, step=1, key="search_id_input")
+search_button = st.button("検索")
+
+if search_button:
+    try:
+        response = httpx.get(f"{API_BASE_URL}/items/{search_id}", timeout=5)
+        response.raise_for_status()
+        st.success(f"商品 (ID: {search_id}) が見つかりました。")
+        st.json(response.json())
+    except httpx.RequestError as e:
+        st.error(f"❌ APIサーバーへの接続に失敗しました: {e}")
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            st.warning(f"⚠️ 商品 (ID: {search_id}) は見つかりませんでした。")
+        else:
+            st.error(f"❌ 検索に失敗しました: {e.response.json().get('detail', e.response.text)}")
 
 st.divider()
 st.header("このセッションで登録した商品")
